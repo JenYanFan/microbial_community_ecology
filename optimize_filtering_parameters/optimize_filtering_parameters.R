@@ -24,7 +24,7 @@ get_post_filtering_stat <- function (errProbF, errProbR, inspected_maxEE, requir
                           if(is.null(e$prm[["R"]][[maxEEr]][[lenR]])){
                             e$prm[["R"]][[maxEEr]][[lenR]] <- rowSums(errProbR[, 1:x$lenR]) <= x$maxEEr}
                           # Calculate reads with EE below maxEEf and below maxEEr
-                          x$pass_reads <- sum(e$prm[["R"]][[maxEEf]][[lenF]] * e$prm[["F"]][[maxEEr]][[lenR]], na.rm = TRUE)
+                          x$pass_reads <- sum(e$prm[["R"]][[maxEEr]][[lenR]] * e$prm[["F"]][[maxEEf]][[lenF]], na.rm = TRUE)
                           x$total_reads <- nrow(errProbF)
                           return(x)
                         }

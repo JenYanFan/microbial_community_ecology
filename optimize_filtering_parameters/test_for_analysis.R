@@ -4,14 +4,14 @@ source("./optimize_filtering_parameters/optimize_filtering_parameters.R")
 required_len <- 253 + 20
 read_len <- 175
 min_len <- required_len - read_len
-inspected_maxEE <- seq(1, 10, 1)
+inspected_maxEE <- seq(1, 10, 2)
 # Read files
 fqF <- paste0("./data/", c("G64589_R1_001.fastq", "G73864_R1_001.fastq"))
 fqR <- paste0("./data/", c("G64589_R2_001.fastq", "G73864_R2_001.fastq"))
 # Get post-filtering stats
-filte_stat <- get_post_filtering_stat_for_multiple_files(fqF,fqR,inspected_maxEE, required_len, read_len)
+filter_stat <- get_post_filtering_stat_for_multiple_files(fqF,fqR,inspected_maxEE, required_len, read_len)
 # Extract optimal length cutoff and parameter candidate
-candidate  <- prioritize_parameters(filte_stat)
+candidate  <- prioritize_parameters(filter_stat)
 # Visualize results
 plot_data <- pivot_longer(candidate, 
                           cols = c("fo_diff", "pass_ratio"),
