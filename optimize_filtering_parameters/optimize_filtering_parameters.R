@@ -1,4 +1,5 @@
 #!/usr/bin/Rscript
+library(compiler)
 packages <- c("ShortRead", "tidyverse")
 install.packages(setdiff(packages, rownames(installed.packages())))
 invisible(sapply(packages, function(x) require(x, character.only = TRUE, quietly = TRUE)))
@@ -11,6 +12,8 @@ get_post_filtering_stat <- function (errProbF, errProbR, inspected_maxEE, requir
                              maxEEr = inspected_maxEE,
                              lenR = min_len:read_len)
   filt_stat <- filt_stat[(filt_stat$lenF + filt_stat$lenR) == required_len, ]
+  filt_stat$total_reads <- nrow(errProbF)
+  filt_stat$pass_reads <- NA
   # Expected errors for reads with various lengths
   eeF <- lapply(lapply(min_len:ncol(errProbF), sequence),
                        function (x) { return(rowSums(errProbF[, x])) })
@@ -19,15 +22,14 @@ get_post_filtering_stat <- function (errProbF, errProbR, inspected_maxEE, requir
   # Clear unuse variables
   errProbF <- NULL
   errProbR <- NULL
+  gc()
   # Count reads with expected errors <= MaxEE
-  filt_stat <- 
-    Reduce(lapply(split(filt_stat, row.names(filt_stat)),
-           function (x) {
-             x$pass_reads <- sum((eeF[[x$lenF + 1 - min_len]] <= x$maxEEf) * (eeR[[x$lenR + 1 - min_len]] <= x$maxEEr), na.rm = TRUE)
-             x$total_reads <- length(eeF[[1]])
-             return(x)
-             }
-           ), f = rbind)
+  filt_stat$pass_reads <- 
+    lapply(1:nrow(filt_stat),
+           function (i) {
+             sum((eeF[[filt_stat$lenF[i] + 1 - min_len]] <= filt_stat$maxEEf[i]) * (eeR[[filt_stat$lenR[i] + 1 - min_len]] <=  filt_stat$maxEEr[i]), na.rm = TRUE)
+           }
+    )
   return(filt_stat)
 }
 
@@ -41,6 +43,7 @@ get_post_filtering_stat_for_multiple_files <- function(fileF, fileR, inspected_m
     errProbR <- 10^-(as(quality(readFastq(fileR[i])), "matrix")/10)
     tmp <- get_post_filtering_stat(errProbF, errProbR, inspected_maxEE, required_len, read_len)
     filt_stat[, c("pass_reads", "total_reads")] <- filt_stat[, c("pass_reads", "total_reads")] + tmp[, c("pass_reads", "total_reads")]
+    gc()
   }
   filt_stat$pass_ratio <- filt_stat$pass_reads/filt_stat$total_reads
   filt_stat$EE_index <- (filt_stat$maxEEf^2 + filt_stat$maxEEr^2)^0.5
@@ -69,10 +72,5 @@ prioritize_parameters <- function(filt_stat) {
   candidate <- candidate[order(-candidate$fo_diff), ]
   return(candidate)
 }
-
-
-
-
-
 
 

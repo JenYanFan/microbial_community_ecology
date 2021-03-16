@@ -1,6 +1,5 @@
 #!/usr/bin/Rscript
 source("./optimize_filtering_parameters/optimize_filtering_parameters.R")
-library(profmem)
 # Parameters
 required_len <- 253 + 20
 read_len <- 175
@@ -13,7 +12,6 @@ fqR <- sort(list.files(path, pattern="_R2_001.fastq", full.names = TRUE))
 
 # Get post-filtering stats
 filter_stat <- get_post_filtering_stat_for_multiple_files(fqF,fqR,inspected_maxEE, required_len, read_len)
-
 # Extract optimal length cutoff and parameter candidate
 candidate  <- prioritize_parameters(filter_stat)
 # Visualize results
