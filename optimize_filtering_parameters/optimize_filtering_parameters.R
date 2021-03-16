@@ -19,17 +19,18 @@ get_post_filtering_stat <- function (errProbF, errProbR, inspected_maxEE, requir
                        function (x) { return(rowSums(errProbF[, x])) })
   eeR <- lapply(lapply(min_len:ncol(errProbR), sequence),
                        function (x) { return(rowSums(errProbR[, x])) })
-  # Clear unuse variables
+  # Clear unused variables
   errProbF <- NULL
   errProbR <- NULL
   gc()
   # Count reads with expected errors <= MaxEE
   filt_stat$pass_reads <- 
-    lapply(1:nrow(filt_stat),
+    unlist(lapply(1:nrow(filt_stat),
            function (i) {
-             sum((eeF[[filt_stat$lenF[i] + 1 - min_len]] <= filt_stat$maxEEf[i]) * (eeR[[filt_stat$lenR[i] + 1 - min_len]] <=  filt_stat$maxEEr[i]), na.rm = TRUE)
+             return(sum((eeF[[filt_stat$lenF[i] + 1 - min_len]] <= filt_stat$maxEEf[i]) * (eeR[[filt_stat$lenR[i] + 1 - min_len]] <=  filt_stat$maxEEr[i]), na.rm = TRUE))
            }
-    )
+    ))
+
   return(filt_stat)
 }
 
