@@ -1,15 +1,19 @@
 #!/usr/bin/Rscript
 source("./optimize_filtering_parameters/optimize_filtering_parameters.R")
+library(profmem)
 # Parameters
 required_len <- 253 + 20
 read_len <- 175
 min_len <- required_len - read_len
 inspected_maxEE <- seq(1, 10, 2)
 # Read files
-fqF <- paste0("./data/", c("G64589_R1_001.fastq", "G73864_R1_001.fastq"))
-fqR <- paste0("./data/", c("G64589_R2_001.fastq", "G73864_R2_001.fastq"))
+path="./data"
+fqF <- sort(list.files(path, pattern="_R1_001.fastq", full.names = TRUE))
+fqR <- sort(list.files(path, pattern="_R2_001.fastq", full.names = TRUE))
+
 # Get post-filtering stats
 filter_stat <- get_post_filtering_stat_for_multiple_files(fqF,fqR,inspected_maxEE, required_len, read_len)
+
 # Extract optimal length cutoff and parameter candidate
 candidate  <- prioritize_parameters(filter_stat)
 # Visualize results
@@ -35,3 +39,14 @@ p <- ggplot(data = plot_data,
         strip.background = element_blank(),
         strip.text = element_text(size = 14, face = "bold", color = "black"),
         strip.placement = "outside")
+
+ggsave(p, filename = "./j.jpg",
+       width = 8, height = 8, dpi = 300)
+
+# --------------
+
+filter_stat <- expand.grid(maxEEf = 1:10, 
+                           lenF = 98:175, 
+                           maxEEr = 1:10, 
+                           lenR = 98:175) 
+mtx_filt_stat <- as.matrix(filter_stat)
